@@ -10,8 +10,10 @@ import java.io.InputStreamReader;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintWriter;
+import java.util.Arrays;
 
 import static java.lang.System.lineSeparator;
+import static java.util.stream.Collectors.joining;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public final class ApplicationTest {
@@ -100,21 +102,26 @@ public final class ApplicationTest {
     }
 
     private void execute(String command) throws IOException {
-        read(PROMPT);
+        read(PROMPT.length());
         write(command);
     }
 
-    private void read(String expectedOutput) throws IOException {
-        int length = expectedOutput.length();
-        char[] buffer = new char[length];
+    private String read(int length) throws IOException {
+        var buffer = new char[length];
         outReader.read(buffer, 0, length);
-        assertEquals(expectedOutput, String.valueOf(buffer));
+        return String.valueOf(buffer);
     }
 
     private void readLines(String... expectedOutput) throws IOException {
-        for (String line : expectedOutput) {
-            read(line + lineSeparator());
+        var expected = new StringBuilder();
+        var actual = new StringBuilder();
+        for (var line : expectedOutput) {
+            var fullLine = line + lineSeparator();
+            expected.append(fullLine);
+            actual.append(outReader.readLine()).append(lineSeparator());
         }
+
+        assertEquals(expected.toString(), actual.toString());
     }
 
     private void write(String input) {
